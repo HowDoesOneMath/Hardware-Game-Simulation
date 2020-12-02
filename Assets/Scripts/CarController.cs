@@ -5,6 +5,9 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class CarController : MonoBehaviour
 {
+    public AudioSource bumpEffect;
+    public AudioSource engineSound;
+
     public CarManager manager;
 
     public float MAX_SPEED;
@@ -12,7 +15,7 @@ public class CarController : MonoBehaviour
     public float MAX_TURN_SPEED;
     public float TORQUE;
 
-    public float turnStrength { get; private set; } = 0;
+    public float velocityRatio { get; private set; } = 0;
     public float turnSharpness { get; private set; } = 0;
     public Rigidbody rb { get; private set; }
 
@@ -38,7 +41,7 @@ public class CarController : MonoBehaviour
         rb.AddForce(movement * ACCELERATION, ForceMode.Impulse);
         rb.velocity = Vector3.ClampMagnitude(rb.velocity, MAX_SPEED);
 
-        turnStrength = rb.velocity.magnitude / MAX_SPEED * Vector3.Dot(rb.velocity.normalized, transform.forward);
+        velocityRatio = rb.velocity.magnitude / MAX_SPEED * Vector3.Dot(rb.velocity.normalized, transform.forward);
         
 
         if (Input.GetKey(manager.lKey))
@@ -50,8 +53,8 @@ public class CarController : MonoBehaviour
             turning += transform.up;
         }
 
-        rb.AddTorque(turning * TORQUE * turnStrength, ForceMode.Impulse);
-        rb.angularVelocity = Vector3.ClampMagnitude(rb.angularVelocity, MAX_TURN_SPEED * Mathf.Abs(turnStrength));
+        rb.AddTorque(turning * TORQUE * velocityRatio, ForceMode.Impulse);
+        rb.angularVelocity = Vector3.ClampMagnitude(rb.angularVelocity, MAX_TURN_SPEED * Mathf.Abs(velocityRatio));
 
         turnSharpness = rb.angularVelocity.magnitude / MAX_TURN_SPEED;
     }
@@ -63,6 +66,8 @@ public class CarController : MonoBehaviour
         {
             ResetCar();
         }
+
+        engineSound.pitch = (1.0f + 2.0f * Mathf.Abs(velocityRatio));
     }
 
     void ResetCar()
@@ -72,5 +77,16 @@ public class CarController : MonoBehaviour
 
         rb.velocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.impulse.magnitude < 5f)
+            return;
+
+        if(Mathf.Abs(Vector3.Dot(collision.impulse.normalized, transform.up)) < 0.5f)
+        {
+            bumpEffect.Play();
+        }
     }
 }

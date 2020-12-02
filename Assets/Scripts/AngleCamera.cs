@@ -59,7 +59,7 @@ public class AngleCamera : MonoBehaviour
         transform.localRotation = Quaternion.Euler(trueRot);
 
 
-        float intendedFOV = (Mathf.Max(cc.turnStrength, 0) * FOVPercentIncrease * 0.01f + 1) * initialFOV;
+        float intendedFOV = (Mathf.Max(cc.velocityRatio, 0) * FOVPercentIncrease * 0.01f + 1) * initialFOV;
 
         if (Mathf.Abs(trueFOV - intendedFOV)  < 0.1)
             trueFOV = intendedFOV;
