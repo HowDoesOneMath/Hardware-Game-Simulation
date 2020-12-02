@@ -18,6 +18,9 @@ public class CarBodyMotion : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (cc.manager.paused)
+            return;
+
         Vector3 carRot = cc.rb.angularVelocity / cc.MAX_TURN_SPEED * driftAmount;
 
         if ((trueRot - carRot).magnitude < 0.1)

@@ -1,10 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(Camera))]
 public class AngleCamera : MonoBehaviour
 {
+    public Image seatFrontPad;
+    public Image seatLeftCheek;
+    public Image seatRightCheek;
+
     Vector3 trueRot = Vector3.zero;
     float trueFOV;
 
@@ -26,19 +31,26 @@ public class AngleCamera : MonoBehaviour
 
         initialFOV = mainCam.fieldOfView;
         trueFOV = initialFOV;
+
+        seatFrontPad.color = Color.yellow;
+        seatLeftCheek.color = Color.yellow;
+        seatRightCheek.color = Color.yellow;
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (cc.manager.paused)
+            return;
+
         Vector3 intendedRot = Vector3.zero;
         if (Input.GetKey(manager.fTilt))
         {
-            intendedRot += Vector3.right;
+            intendedRot -= Vector3.right;
         }
         if (Input.GetKey(manager.bTilt))
         {
-            intendedRot -= Vector3.right;
+            intendedRot += Vector3.right;
         }
         if (Input.GetKey(manager.rTilt))
         {
@@ -48,6 +60,10 @@ public class AngleCamera : MonoBehaviour
         {
             intendedRot -= Vector3.up;
         }
+
+        seatFrontPad.color = Color.HSVToRGB((2 + 2 * intendedRot.x) / 12f, 1, 0.7f);
+        seatLeftCheek.color = Color.HSVToRGB((2 + intendedRot.y - intendedRot.x) / 12f, 1, 0.7f);
+        seatRightCheek.color = Color.HSVToRGB((2 - intendedRot.y - intendedRot.x) / 12f, 1, 0.7f);
 
         intendedRot *= cameraOffset;
 

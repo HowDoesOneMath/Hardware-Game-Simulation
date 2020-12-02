@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(Rigidbody))]
 public class CarController : MonoBehaviour
@@ -9,6 +10,11 @@ public class CarController : MonoBehaviour
     public AudioSource engineSound;
 
     public CarManager manager;
+
+    public Image leftPedalForward;
+    public Image leftPedalBackward;
+    public Image rightPedalForward;
+    public Image rightPedalBackward;
 
     public float MAX_SPEED;
     public float ACCELERATION;
@@ -22,19 +28,32 @@ public class CarController : MonoBehaviour
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
+
+        leftPedalForward.color = Color.yellow;
+        leftPedalBackward.color = Color.yellow;
+        rightPedalForward.color = Color.yellow;
+        rightPedalBackward.color = Color.yellow;
     }
 
     private void FixedUpdate()
     {
+        if (manager.paused)
+            return;
+
         Vector3 movement = Vector3.zero;
         Vector3 turning = Vector3.zero;
 
+        float accelerating = 0;
+        float breaking = 0;
+
         if (Input.GetKey(manager.fKey))
         {
+            accelerating = 1;
             movement += transform.forward;
         }
         if (Input.GetKey(manager.bKey))
         {
+            breaking = 1;
             movement -= transform.forward;
         }
 
@@ -42,7 +61,11 @@ public class CarController : MonoBehaviour
         rb.velocity = Vector3.ClampMagnitude(rb.velocity, MAX_SPEED);
 
         velocityRatio = rb.velocity.magnitude / MAX_SPEED * Vector3.Dot(rb.velocity.normalized, transform.forward);
-        
+
+        leftPedalForward.color = Color.HSVToRGB((2 - breaking) / 12f, 1, 0.7f);
+        leftPedalBackward.color = Color.HSVToRGB((2 + breaking) / 12f, 1, 0.7f);
+        rightPedalForward.color = Color.HSVToRGB((2 - accelerating) / 12f, 1, 0.7f);
+        rightPedalBackward.color = Color.HSVToRGB((2 + accelerating) / 12f, 1, 0.7f);
 
         if (Input.GetKey(manager.lKey))
         {
@@ -62,6 +85,9 @@ public class CarController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (manager.paused)
+            return;
+
         if (Input.GetKeyUp(manager.reset))
         {
             ResetCar();
